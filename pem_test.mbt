@@ -1,5 +1,22 @@
 ///|
 /// Tests for PEM encoding and decoding functionality
+
+/// Helper function to check if string starts with prefix (for tests)
+fn string_starts_with(s : String, prefix : String) -> Bool {
+  match s.strip_prefix(prefix) {
+    Some(_) => true
+    None => false
+  }
+}
+
+/// Helper function to check if string ends with suffix (for tests)
+fn string_ends_with(s : String, suffix : String) -> Bool {
+  match s.strip_suffix(suffix) {
+    Some(_) => true
+    None => false
+  }
+}
+
 test "encode_simple_pem_block" {
   let data = b"Hello, World!"
   let block = @pem.PemBlock::new(label="MESSAGE", data~)
@@ -77,10 +94,10 @@ test "decode_simple_pem_block" {
       inspect(
         block.data.to_string(),
         content=(
-          #|b"\x48\x65\x6c\x6c\x6f\x2c\x20\x57\x6f\x72\x6c\x64\x21"
+          #|b"Hello, World!"
         ),
       )
-      inspect(block.headers.size(), content="0")
+      inspect(block.headers.length(), content="0")
     }
     Err(error) => fail("Unexpected error: \{error}")
   }
@@ -102,10 +119,10 @@ test "decode_pem_block_with_headers" {
       inspect(
         block.data.to_string(),
         content=(
-          #|b"\x54\x65\x73\x74\x20\x64\x61\x74\x61"
+          #|b"Test data"
         ),
       )
-      inspect(block.headers.size(), content="2")
+      inspect(block.headers.length(), content="2")
       inspect(
         block.headers.get("Version"),
         content=(
@@ -138,7 +155,7 @@ test "decode_multiline_base64" {
       inspect(
         block.data.to_string(),
         content=(
-          #|b"\x54\x68\x69\x73\x20\x69\x73\x20\x61\x20\x6c\x6f\x6e\x67\x20\x6c\x69\x6e\x65\x20\x6f\x66\x20\x64\x61\x74\x61\x20\x74\x68\x61\x74\x20\x77\x69\x6c\x6c\x20\x62\x65\x20\x73\x70\x6c\x69\x74\x20\x61\x63\x72\x6f\x73\x73\x20\x6d\x75\x6c\x74\x69\x70\x6c\x65\x20\x6c\x69\x6e\x65\x73\x20\x69\x6e\x20\x74\x68\x65\x20\x50\x45\x4d\x20\x66\x6f\x72\x6d\x61\x74"
+          #|b"This is a long line of data that will be split across multiple lines in the PEM format"
         ),
       )
     }
@@ -159,7 +176,7 @@ test "decode_pem_with_whitespace" {
       inspect(
         block.data.to_string(),
         content=(
-          #|b"\x48\x65\x6c\x6c\x6f\x2c\x20\x57\x6f\x72\x6c\x64\x21"
+          #|b"Hello, World!"
         ),
       )
     }
@@ -219,21 +236,21 @@ test "decode_multiple_pem_blocks" {
       inspect(
         blocks[0].data.to_string(),
         content=(
-          #|b"\x66\x69\x72\x73\x74"
+          #|b"first"
         ),
       )
       inspect(blocks[1].label, content="SECOND")
       inspect(
         blocks[1].data.to_string(),
         content=(
-          #|b"\x73\x65\x63\x6f\x6e\x64"
+          #|b"second"
         ),
       )
       inspect(blocks[2].label, content="THIRD")
       inspect(
         blocks[2].data.to_string(),
         content=(
-          #|b"\x74\x68\x69\x72\x64"
+          #|b"third"
         ),
       )
     }
@@ -394,7 +411,7 @@ test "pem_block_constructor" {
   inspect(
     block.data.to_string(),
     content=(
-      #|b"\x74\x65\x73\x74\x20\x64\x61\x74\x61"
+      #|b"test data"
     ),
   )
   inspect(
@@ -413,10 +430,10 @@ test "pem_block_constructor_default_headers" {
   inspect(
     block.data.to_string(),
     content=(
-      #|b"\x74\x65\x73\x74\x20\x64\x61\x74\x61"
+      #|b"test data"
     ),
   )
-  inspect(block.headers.size(), content="0")
+  inspect(block.headers.length(), content="0")
 }
 
 ///|
@@ -525,19 +542,19 @@ test "documentation_certificate_chain_example" {
       inspect(
         certificates[0].data.to_string(),
         content=(
-          #|b"\x46\x69\x72\x73\x74\x20\x63\x65\x72\x74\x69\x66\x69\x63\x61\x74\x65\x20\x64\x61\x74\x61"
+          #|b"First certificate data"
         ),
       )
       inspect(
         certificates[1].data.to_string(),
         content=(
-          #|b"\x53\x65\x63\x6f\x6e\x64\x20\x63\x65\x72\x74\x69\x66\x69\x63\x61\x74\x65\x20\x64\x61\x74\x61"
+          #|b"Second certificate data"
         ),
       )
       inspect(
         certificates[2].data.to_string(),
         content=(
-          #|b"\x54\x68\x69\x72\x64\x20\x63\x65\x72\x74\x69\x66\x69\x63\x61\x74\x65\x20\x64\x61\x74\x61"
+          #|b"Third certificate data"
         ),
       )
     }
@@ -581,5 +598,69 @@ test "documentation_private_key_with_encryption_headers" {
       )
     }
     Err(error) => fail("Private key roundtrip failed: \{error}")
+  }
+}
+
+///|
+test "decode_error_invalid_label_with_newline" {
+  // Note: A newline in the label will cause the PEM format itself to be invalid,
+  // so this test verifies that invalid format is detected
+  let pem_data =
+    #|-----BEGIN TEST
+    #|LABEL-----
+    #|SGVsbG8=
+    #|-----END TEST
+    #|LABEL-----
+  let result = @pem.decode(pem_data)
+  match result {
+    Err(@pem.PemError::InvalidFormat(_)) =>
+      // Expected - format error is detected before label validation
+      ()
+    Ok(_) => fail("Expected error for label with newline")
+    Err(other) => fail("Unexpected error type: \{other}")
+  }
+}
+
+///|
+test "decode_error_invalid_label_with_colon" {
+  let pem_data =
+    #|-----BEGIN TEST:LABEL-----
+    #|SGVsbG8=
+    #|-----END TEST:LABEL-----
+  let result = @pem.decode(pem_data)
+  match result {
+    Err(@pem.PemError::InvalidLabel(_)) =>
+      // Expected
+      ()
+    Ok(_) => fail("Expected error for label with colon")
+    Err(other) => fail("Unexpected error type: \{other}")
+  }
+}
+
+///|
+test "decode_error_invalid_label_with_control_char" {
+  // Test with a label containing a control character (e.g., tab)
+  let pem_data = "-----BEGIN TEST\tLABEL-----\nSGVsbG8=\n-----END TEST\tLABEL-----"
+  let result = @pem.decode(pem_data)
+  match result {
+    Err(@pem.PemError::InvalidLabel(_)) =>
+      // Expected
+      ()
+    Ok(_) => fail("Expected error for label with control character")
+    Err(other) => fail("Unexpected error type: \{other}")
+  }
+}
+
+///|
+test "decode_valid_label_with_spaces" {
+  // Spaces are valid in labels (e.g., "RSA PRIVATE KEY")
+  let pem_data =
+    #|-----BEGIN RSA PRIVATE KEY-----
+    #|SGVsbG8=
+    #|-----END RSA PRIVATE KEY-----
+  let result = @pem.decode(pem_data)
+  match result {
+    Ok(block) => inspect(block.label, content="RSA PRIVATE KEY")
+    Err(error) => fail("Valid label with spaces should not fail: \{error}")
   }
 }

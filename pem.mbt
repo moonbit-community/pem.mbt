@@ -32,6 +32,19 @@ pub(all) struct PemBlock {
 } derive(Show, Eq)
 
 ///|
+/// Validate PEM label - must not contain newlines, colons, or control characters
+fn validate_label(label : String) -> Result[Unit, PemError] {
+  for i = 0; i < label.length(); i = i + 1 {
+    let ch = label[i]
+    // Reject newlines (10, 13), colons (58), and control characters (< 32 or > 126)
+    if ch == 10 || ch == 13 || ch == 58 || ch < 32 || ch > 126 {
+      return Err(PemError::InvalidLabel("Label contains invalid characters"))
+    }
+  }
+  Ok(())
+}
+
+///|
 /// Create a new PEM block
 pub fn PemBlock::new(
   label~ : String,
@@ -158,7 +171,7 @@ pub fn encode(block : PemBlock) -> String {
 
 ///|
 /// Helper function to check if string starts with prefix
-pub fn string_starts_with(s : String, prefix : String) -> Bool {
+fn string_starts_with(s : String, prefix : String) -> Bool {
   match s.strip_prefix(prefix) {
     Some(_) => true
     None => false
@@ -167,7 +180,7 @@ pub fn string_starts_with(s : String, prefix : String) -> Bool {
 
 ///|
 /// Helper function to check if string ends with suffix
-pub fn string_ends_with(s : String, suffix : String) -> Bool {
+fn string_ends_with(s : String, suffix : String) -> Bool {
   match s.strip_suffix(suffix) {
     Some(_) => true
     None => false
@@ -230,6 +243,12 @@ pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
   }
   if begin_line_idx == -1 {
     return Err(PemError::InvalidFormat("Missing BEGIN marker"))
+  }
+
+  // Validate begin label
+  match validate_label(begin_label) {
+    Ok(_) => ()
+    Err(error) => return Err(error)
   }
 
   // Find end marker
