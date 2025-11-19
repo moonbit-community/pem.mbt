@@ -136,7 +136,7 @@ pub fn encode(block : PemBlock) -> String {
   for key, value in block.headers {
     result = result + "\{key}: \{value}\n"
   }
-  if block.headers.size() > 0 {
+  if block.headers.length() > 0 {
     result = result + "\n"
   }
 

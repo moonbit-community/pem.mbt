@@ -77,10 +77,10 @@ test "decode_simple_pem_block" {
       inspect(
         block.data.to_string(),
         content=(
-          #|b"\x48\x65\x6c\x6c\x6f\x2c\x20\x57\x6f\x72\x6c\x64\x21"
+          "b\"Hello, World!\""
         ),
       )
-      inspect(block.headers.size(), content="0")
+      inspect(block.headers.length(), content="0")
     }
     Err(error) => fail("Unexpected error: \{error}")
   }
@@ -102,10 +102,10 @@ test "decode_pem_block_with_headers" {
       inspect(
         block.data.to_string(),
         content=(
-          #|b"\x54\x65\x73\x74\x20\x64\x61\x74\x61"
+          "b\"Test data\""
         ),
       )
-      inspect(block.headers.size(), content="2")
+      inspect(block.headers.length(), content="2")
       inspect(
         block.headers.get("Version"),
         content=(
@@ -138,7 +138,7 @@ test "decode_multiline_base64" {
       inspect(
         block.data.to_string(),
         content=(
-          #|b"\x54\x68\x69\x73\x20\x69\x73\x20\x61\x20\x6c\x6f\x6e\x67\x20\x6c\x69\x6e\x65\x20\x6f\x66\x20\x64\x61\x74\x61\x20\x74\x68\x61\x74\x20\x77\x69\x6c\x6c\x20\x62\x65\x20\x73\x70\x6c\x69\x74\x20\x61\x63\x72\x6f\x73\x73\x20\x6d\x75\x6c\x74\x69\x70\x6c\x65\x20\x6c\x69\x6e\x65\x73\x20\x69\x6e\x20\x74\x68\x65\x20\x50\x45\x4d\x20\x66\x6f\x72\x6d\x61\x74"
+          "b\"This is a long line of data that will be split across multiple lines in the PEM format\""
         ),
       )
     }
@@ -159,7 +159,7 @@ test "decode_pem_with_whitespace" {
       inspect(
         block.data.to_string(),
         content=(
-          #|b"\x48\x65\x6c\x6c\x6f\x2c\x20\x57\x6f\x72\x6c\x64\x21"
+          "b\"Hello, World!\""
         ),
       )
     }
@@ -219,21 +219,21 @@ test "decode_multiple_pem_blocks" {
       inspect(
         blocks[0].data.to_string(),
         content=(
-          #|b"\x66\x69\x72\x73\x74"
+          "b\"first\""
         ),
       )
       inspect(blocks[1].label, content="SECOND")
       inspect(
         blocks[1].data.to_string(),
         content=(
-          #|b"\x73\x65\x63\x6f\x6e\x64"
+          "b\"second\""
         ),
       )
       inspect(blocks[2].label, content="THIRD")
       inspect(
         blocks[2].data.to_string(),
         content=(
-          #|b"\x74\x68\x69\x72\x64"
+          "b\"third\""
         ),
       )
     }
@@ -394,7 +394,7 @@ test "pem_block_constructor" {
   inspect(
     block.data.to_string(),
     content=(
-      #|b"\x74\x65\x73\x74\x20\x64\x61\x74\x61"
+      "b\"test data\""
     ),
   )
   inspect(
@@ -413,10 +413,10 @@ test "pem_block_constructor_default_headers" {
   inspect(
     block.data.to_string(),
     content=(
-      #|b"\x74\x65\x73\x74\x20\x64\x61\x74\x61"
+      "b\"test data\""
     ),
   )
-  inspect(block.headers.size(), content="0")
+  inspect(block.headers.length(), content="0")
 }
 
 ///|
@@ -525,19 +525,19 @@ test "documentation_certificate_chain_example" {
       inspect(
         certificates[0].data.to_string(),
         content=(
-          #|b"\x46\x69\x72\x73\x74\x20\x63\x65\x72\x74\x69\x66\x69\x63\x61\x74\x65\x20\x64\x61\x74\x61"
+          "b\"First certificate data\""
         ),
       )
       inspect(
         certificates[1].data.to_string(),
         content=(
-          #|b"\x53\x65\x63\x6f\x6e\x64\x20\x63\x65\x72\x74\x69\x66\x69\x63\x61\x74\x65\x20\x64\x61\x74\x61"
+          "b\"Second certificate data\""
         ),
       )
       inspect(
         certificates[2].data.to_string(),
         content=(
-          #|b"\x54\x68\x69\x72\x64\x20\x63\x65\x72\x74\x69\x66\x69\x63\x61\x74\x65\x20\x64\x61\x74\x61"
+          "b\"Third certificate data\""
         ),
       )
     }
