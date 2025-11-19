@@ -49,7 +49,7 @@ test "basic_decoding_example" {
     Ok(block) => {
       assert_eq(block.label, "MESSAGE")
       assert_eq(block.data, "Hello, World!")
-      assert_eq(block.headers.size(), 0)
+      assert_eq(block.headers.length(), 0)
     }
     Err(error) => fail("Unexpected error: \{error}")
   }
