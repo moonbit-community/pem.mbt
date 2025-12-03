@@ -1,0 +1,41 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "hackwaly/pem"
+
+// Values
+pub fn decode(String) -> Result[PemBlock, PemError]
+
+pub fn decode_many(String) -> Result[Array[PemBlock], PemError]
+
+pub fn encode(PemBlock) -> String
+
+pub fn string_ends_with(String, String) -> Bool
+
+pub fn string_starts_with(String, String) -> Bool
+
+// Errors
+
+// Types and methods
+pub(all) struct PemBlock {
+  label : String
+  data : Bytes
+  headers : Map[String, String]
+}
+pub fn PemBlock::new(label~ : String, data~ : Bytes, headers? : Map[String, String]) -> Self
+pub impl Eq for PemBlock
+pub impl Show for PemBlock
+
+pub(all) enum PemError {
+  InvalidFormat(String)
+  InvalidBase64(String)
+  MismatchedLabels(String, String)
+  EmptyData
+  InvalidLabel(String)
+}
+pub impl Eq for PemError
+pub impl Show for PemError
+pub impl ToJson for PemError
+
+// Type aliases
+
+// Traits
+
