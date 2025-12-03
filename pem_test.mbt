@@ -74,12 +74,7 @@ test "decode_simple_pem_block" {
   match result {
     Ok(block) => {
       inspect(block.label, content="MESSAGE")
-      inspect(
-        block.data.to_string(),
-        content=(
-          "b\"Hello, World!\""
-        ),
-      )
+      inspect(block.data.to_string(), content="b\"Hello, World!\"")
       inspect(block.headers.length(), content="0")
     }
     Err(error) => fail("Unexpected error: \{error}")
@@ -99,12 +94,7 @@ test "decode_pem_block_with_headers" {
   match result {
     Ok(block) => {
       inspect(block.label, content="CERTIFICATE")
-      inspect(
-        block.data.to_string(),
-        content=(
-          "b\"Test data\""
-        ),
-      )
+      inspect(block.data.to_string(), content="b\"Test data\"")
       inspect(block.headers.length(), content="2")
       inspect(
         block.headers.get("Version"),
@@ -137,9 +127,7 @@ test "decode_multiline_base64" {
       inspect(block.label, content="DATA")
       inspect(
         block.data.to_string(),
-        content=(
-          "b\"This is a long line of data that will be split across multiple lines in the PEM format\""
-        ),
+        content="b\"This is a long line of data that will be split across multiple lines in the PEM format\"",
       )
     }
     Err(error) => fail("Unexpected error: \{error}")
@@ -156,12 +144,7 @@ test "decode_pem_with_whitespace" {
   match result {
     Ok(block) => {
       inspect(block.label, content="MESSAGE")
-      inspect(
-        block.data.to_string(),
-        content=(
-          "b\"Hello, World!\""
-        ),
-      )
+      inspect(block.data.to_string(), content="b\"Hello, World!\"")
     }
     Err(error) => fail("Unexpected error: \{error}")
   }
@@ -216,26 +199,11 @@ test "decode_multiple_pem_blocks" {
     Ok(blocks) => {
       inspect(blocks.length(), content="3")
       inspect(blocks[0].label, content="FIRST")
-      inspect(
-        blocks[0].data.to_string(),
-        content=(
-          "b\"first\""
-        ),
-      )
+      inspect(blocks[0].data.to_string(), content="b\"first\"")
       inspect(blocks[1].label, content="SECOND")
-      inspect(
-        blocks[1].data.to_string(),
-        content=(
-          "b\"second\""
-        ),
-      )
+      inspect(blocks[1].data.to_string(), content="b\"second\"")
       inspect(blocks[2].label, content="THIRD")
-      inspect(
-        blocks[2].data.to_string(),
-        content=(
-          "b\"third\""
-        ),
-      )
+      inspect(blocks[2].data.to_string(), content="b\"third\"")
     }
     Err(error) => fail("Unexpected error: \{error}")
   }
@@ -391,12 +359,7 @@ test "pem_block_constructor" {
   let headers : Map[String, String] = { "key": "value" }
   let block = @pem.PemBlock::new(label="TEST", data~, headers~)
   inspect(block.label, content="TEST")
-  inspect(
-    block.data.to_string(),
-    content=(
-      "b\"test data\""
-    ),
-  )
+  inspect(block.data.to_string(), content="b\"test data\"")
   inspect(
     block.headers.get("key"),
     content=(
@@ -410,12 +373,7 @@ test "pem_block_constructor_default_headers" {
   let data = b"test data"
   let block = @pem.PemBlock::new(label="TEST", data~)
   inspect(block.label, content="TEST")
-  inspect(
-    block.data.to_string(),
-    content=(
-      "b\"test data\""
-    ),
-  )
+  inspect(block.data.to_string(), content="b\"test data\"")
   inspect(block.headers.length(), content="0")
 }
 
@@ -524,21 +482,15 @@ test "documentation_certificate_chain_example" {
       inspect(certificates.length(), content="3")
       inspect(
         certificates[0].data.to_string(),
-        content=(
-          "b\"First certificate data\""
-        ),
+        content="b\"First certificate data\"",
       )
       inspect(
         certificates[1].data.to_string(),
-        content=(
-          "b\"Second certificate data\""
-        ),
+        content="b\"Second certificate data\"",
       )
       inspect(
         certificates[2].data.to_string(),
-        content=(
-          "b\"Third certificate data\""
-        ),
+        content="b\"Third certificate data\"",
       )
     }
     Err(error) => fail("Certificate chain parsing failed: \{error}")
@@ -571,9 +523,12 @@ test "documentation_private_key_with_encryption_headers" {
   // Verify roundtrip preserves headers
   match decode(encoded) {
     Ok(decoded) => {
-      inspect(decoded.headers.get("Proc-Type"), content=(
-        #|Some("4,ENCRYPTED")
-      ))
+      inspect(
+        decoded.headers.get("Proc-Type"),
+        content=(
+          #|Some("4,ENCRYPTED")
+        ),
+      )
       inspect(
         decoded.headers.get("DEK-Info")
         |> Option::map(fn(s) { string_starts_with(s, "AES-256-CBC") }),
