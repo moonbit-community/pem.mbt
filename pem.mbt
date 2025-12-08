@@ -18,7 +18,7 @@ pub(all) enum PemError {
   EmptyData
   /// Invalid character in label
   InvalidLabel(String)
-} derive(Eq, Show, ToJson(style="flat"))
+} derive(Eq, Show, ToJson)
 
 ///|
 /// A PEM block represents a single PEM-encoded data block
@@ -63,7 +63,7 @@ let base64_chars : String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxy
 let base64_decode_table : FixedArray[Int] = {
   let table : FixedArray[Int] = FixedArray::make(256, -1)
   for i = 0; i < base64_chars.length(); i = i + 1 {
-    let char_code : Int = base64_chars[i] // String indexing returns codepoint (Int)
+    let char_code : Int = base64_chars.code_unit_at(i).to_int()
     table[char_code] = i
   }
   table[61] = 0 // '=' padding character
@@ -84,15 +84,18 @@ fn encode_base64(data : Bytes) -> String {
     let b2 = if i + 1 < len { data[i + 1].to_int() } else { 0 }
     let b3 = if i + 2 < len { data[i + 2].to_int() } else { 0 }
     let combined = (b1 << 16) | (b2 << 8) | b3
-    let c1 = base64_chars[(combined >> 18) & 63] |> Int::unsafe_to_char
-    let c2 = base64_chars[(combined >> 12) & 63] |> Int::unsafe_to_char
+    let c1 = base64_chars.code_unit_at((combined >> 18) & 63).to_int()
+      |> Int::unsafe_to_char
+    let c2 = base64_chars.code_unit_at((combined >> 12) & 63).to_int()
+      |> Int::unsafe_to_char
     let c3 = if i + 1 < len {
-      base64_chars[(combined >> 6) & 63] |> Int::unsafe_to_char
+      base64_chars.code_unit_at((combined >> 6) & 63).to_int()
+      |> Int::unsafe_to_char
     } else {
       '='
     }
     let c4 = if i + 2 < len {
-      base64_chars[combined & 63] |> Int::unsafe_to_char
+      base64_chars.code_unit_at(combined & 63).to_int() |> Int::unsafe_to_char
     } else {
       '='
     }
@@ -116,10 +119,10 @@ fn decode_base64(input : String) -> Result[Bytes, PemError] {
   let result : Array[Byte] = []
   let mut i = 0
   while i < cleaned.length() {
-    let c1 : Int = cleaned[i] // String indexing returns codepoint (Int)
-    let c2 : Int = cleaned[i + 1]
-    let c3 : Int = cleaned[i + 2]
-    let c4 : Int = cleaned[i + 3]
+    let c1 : Int = cleaned.code_unit_at(i).to_int()
+    let c2 : Int = cleaned.code_unit_at(i + 1).to_int()
+    let c3 : Int = cleaned.code_unit_at(i + 2).to_int()
+    let c4 : Int = cleaned.code_unit_at(i + 3).to_int()
     let v1 = base64_decode_table[c1]
     let v2 = base64_decode_table[c2]
     let v3 = base64_decode_table[c3]
@@ -149,7 +152,7 @@ pub fn encode(block : PemBlock) -> String {
   for key, value in block.headers {
     result = result + "\{key}: \{value}\n"
   }
-  if block.headers.size() > 0 {
+  if block.headers.length() > 0 {
     result = result + "\n"
   }
 
@@ -162,7 +165,7 @@ pub fn encode(block : PemBlock) -> String {
     } else {
       base64_data.length()
     }
-    result = result + base64_data.substring(start=i, end~) + "\n"
+    result = result + (base64_data[i:end] catch { _ => "" }).to_string() + "\n"
     i = i + 64
   }
   result = result + "-----END \{block.label}-----"
@@ -195,7 +198,7 @@ fn trim_string(s : String) -> String {
 
   // Find first non-whitespace character
   while start < end {
-    let ch = s[start]
+    let ch = s.code_unit_at(start).to_int()
     if ch != 32 && ch != 9 && ch != 10 && ch != 13 { // space, tab, newline, carriage return
       break
     }
@@ -204,7 +207,7 @@ fn trim_string(s : String) -> String {
 
   // Find last non-whitespace character
   while end > start {
-    let ch = s[end - 1]
+    let ch = s.code_unit_at(end - 1).to_int()
     if ch != 32 && ch != 9 && ch != 10 && ch != 13 {
       break
     }
@@ -213,7 +216,7 @@ fn trim_string(s : String) -> String {
   if start >= end {
     ""
   } else {
-    s.substring(start~, end~)
+    (s[start:end] catch { _ => "" }).to_string()
   }
 }
 
@@ -237,7 +240,7 @@ pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
       begin_line_idx = i
       let start_pos = 11 // length of "-----BEGIN "
       let end_pos = line.length() - 5 // remove "-----"
-      begin_label = line.substring(start=start_pos, end=end_pos)
+      begin_label = (line[start_pos:end_pos] catch { _ => "" }).to_string()
       break
     }
   }
@@ -260,7 +263,7 @@ pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
       end_line_idx = i
       let start_pos = 9 // length of "-----END "
       let end_pos = line.length() - 5 // remove "-----"
-      end_label = line.substring(start=start_pos, end=end_pos)
+      end_label = (line[start_pos:end_pos] catch { _ => "" }).to_string()
       break
     }
   }
