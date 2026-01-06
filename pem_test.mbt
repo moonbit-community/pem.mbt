@@ -55,7 +55,7 @@ test "encode_long_data_with_line_wrapping" {
   let encoded = @pem.encode(block)
 
   // Verify it contains line breaks and proper structure
-  let lines = encoded.split("\n") |> Iter::to_array
+  let lines = encoded.split("\n") |> Iterator::to_array
   inspect(lines.length() > 3, content="true") // Should have multiple lines
   inspect(lines[0].to_string(), content="-----BEGIN LONG DATA-----")
   inspect(
@@ -454,7 +454,7 @@ test "documentation_long_data_with_line_wrapping" {
   let encoded = encode(block)
 
   // Should have multiple lines due to 64-character wrapping
-  let lines = encoded.split("\n") |> Iter::to_array
+  let lines = encoded.split("\n") |> Iterator::to_array
   inspect(lines.length() > 5, content="true")
 
   // Verify roundtrip
