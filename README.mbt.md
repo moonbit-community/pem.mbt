@@ -305,7 +305,7 @@ test "long_data_line_wrapping_example" {
   let encoded = encode(block)
 
   // Verify line wrapping occurred
-  let lines = encoded.split("\n") |> Iterator::to_array
+  let lines = encoded.split("\n") |> Iter::to_array
   inspect(lines.length() > 4, content="true") // Should have multiple data lines
 
   // Verify roundtrip works with long data

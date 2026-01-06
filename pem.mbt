@@ -211,7 +211,7 @@ fn trim_string(s : String) -> String {
 /// Decode a PEM string to a PEM block
 pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
   let lines = pem_data.split("\n")
-    |> Iterator::to_array
+    |> Iter::to_array
     |> Array::map(fn(view) { view.to_string() })
   if lines.length() < 2 {
     return Err(PemError::InvalidFormat("PEM data too short"))
@@ -268,7 +268,7 @@ pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
     }
     if line.contains(":") {
       let parts = line.split(":")
-        |> Iterator::to_array
+        |> Iter::to_array
         |> Array::map(fn(view) { view.to_string() })
       if parts.length() >= 2 {
         let key = trim_string(parts[0])
@@ -309,7 +309,7 @@ pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
 /// Decode multiple PEM blocks from a string
 pub fn decode_many(pem_data : String) -> Result[Array[PemBlock], PemError] {
   let lines = pem_data.split("\n")
-    |> Iterator::to_array
+    |> Iter::to_array
     |> Array::map(fn(view) { view.to_string() })
   let blocks : Array[PemBlock] = []
   let mut current_block_lines : Array[String] = []
