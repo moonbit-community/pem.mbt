@@ -192,7 +192,7 @@ pub fn encode(block : PemBlock) -> String {
     } else {
       base64_data.length()
     }
-    result = result + (base64_data[i:end] catch { _ => "" }).to_string() + "\n"
+    result = result + base64_data[i:end].to_string() + "\n"
     i = i + 64
   }
   result = result + "-----END \{block.label}-----"
@@ -243,7 +243,7 @@ fn trim_string(s : String) -> String {
   if start >= end {
     ""
   } else {
-    (s[start:end] catch { _ => "" }).to_string()
+    s[start:end].to_string()
   }
 }
 
@@ -267,7 +267,7 @@ pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
       begin_line_idx = i
       let start_pos = 11 // length of "-----BEGIN "
       let end_pos = line.length() - 5 // remove "-----"
-      begin_label = (line[start_pos:end_pos] catch { _ => "" }).to_string()
+      begin_label = line[start_pos:end_pos].to_string()
       break
     }
   }
@@ -284,7 +284,7 @@ pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
       end_line_idx = i
       let start_pos = 9 // length of "-----END "
       let end_pos = line.length() - 5 // remove "-----"
-      end_label = (line[start_pos:end_pos] catch { _ => "" }).to_string()
+      end_label = line[start_pos:end_pos].to_string()
       break
     }
   }
