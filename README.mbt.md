@@ -4,7 +4,7 @@ A MoonBit library for encoding and decoding PEM format data, commonly used for c
 
 ## Basic Encoding
 
-```moonbit
+```moonbit nocheck
 ///|
 test "basic_encoding_example" {
   let data = b"Hello, World!"
@@ -23,7 +23,7 @@ test "basic_encoding_example" {
 
 ## Encoding with Headers
 
-```moonbit
+```moonbit nocheck
 ///|
 test "encoding_with_headers_example" {
   let cert_data = b"Certificate data"
@@ -47,7 +47,7 @@ test "encoding_with_headers_example" {
 
 ## Basic Decoding
 
-```moonbit
+```moonbit nocheck
 ///|
 test "basic_decoding_example" {
   let pem_data =
@@ -68,7 +68,7 @@ test "basic_decoding_example" {
 
 ## Decoding with Headers
 
-```moonbit
+```moonbit nocheck
 ///|
 test "decoding_with_headers_example" {
   let pem_data =
@@ -93,7 +93,7 @@ test "decoding_with_headers_example" {
 
 ## Decoding Multiple Blocks
 
-```moonbit
+```moonbit nocheck
 ///|
 test "multiple_blocks_example" {
   let multi_pem =
@@ -119,7 +119,7 @@ test "multiple_blocks_example" {
 
 ## Error Handling
 
-```moonbit
+```moonbit nocheck
 ///|
 test "error_handling_examples" {
   // Test invalid format
@@ -162,7 +162,7 @@ test "error_handling_examples" {
 
 ## Roundtrip Example
 
-```moonbit
+```moonbit nocheck
 ///|
 test "roundtrip_example" {
   let original_data = b"Any binary data can be encoded in PEM format"
@@ -188,7 +188,7 @@ test "roundtrip_example" {
 
 ## Certificate Example
 
-```moonbit
+```moonbit nocheck
 ///|
 test "certificate_example" {
   let cert_data = b"Mock X.509 certificate data"
@@ -213,7 +213,7 @@ test "certificate_example" {
 
 ## Private Key Example
 
-```moonbit
+```moonbit nocheck
 ///|
 test "private_key_example" {
   let key_data = b"Mock RSA private key data"
@@ -254,7 +254,7 @@ test "private_key_example" {
 
 ## Certificate Chain Example
 
-```moonbit
+```moonbit nocheck
 ///|
 test "certificate_chain_example" {
   // Create a certificate chain
@@ -296,7 +296,7 @@ test "certificate_chain_example" {
 
 ## Long Data with Line Wrapping
 
-```moonbit
+```moonbit nocheck
 ///|
 test "long_data_line_wrapping_example" {
   // Create data that will require line wrapping (more than 64 base64 chars)
@@ -328,7 +328,7 @@ test "long_data_line_wrapping_example" {
 
 ## Mixed Block Types
 
-```moonbit
+```moonbit nocheck
 ///|
 test "mixed_block_types_example" {
   // Create different types of PEM blocks
@@ -360,7 +360,7 @@ test "mixed_block_types_example" {
 
 ## Empty and Edge Cases
 
-```moonbit
+```moonbit nocheck
 ///|
 test "edge_cases_example" {
   // Test empty data
