@@ -18,7 +18,7 @@ pub(all) enum PemError {
   EmptyData
   /// Invalid character in label
   InvalidLabel(String)
-} derive(Eq, Show, ToJson)
+} derive(Eq, ToJson)
 
 ///|
 /// A PEM block represents a single PEM-encoded data block
@@ -29,7 +29,47 @@ pub(all) struct PemBlock {
   data : Bytes
   /// Optional headers as key-value pairs
   headers : Map[String, String]
-} derive(Show, Eq)
+} derive(Eq)
+
+///|
+pub impl Show for PemError with output(self, logger) {
+  match self {
+    InvalidFormat(message) => {
+      logger.write_string("InvalidFormat(")
+      logger.write_object(message)
+      logger.write_string(")")
+    }
+    InvalidBase64(message) => {
+      logger.write_string("InvalidBase64(")
+      logger.write_object(message)
+      logger.write_string(")")
+    }
+    MismatchedLabels(begin, end) => {
+      logger.write_string("MismatchedLabels(")
+      logger.write_object(begin)
+      logger.write_string(", ")
+      logger.write_object(end)
+      logger.write_string(")")
+    }
+    EmptyData => logger.write_string("EmptyData")
+    InvalidLabel(label) => {
+      logger.write_string("InvalidLabel(")
+      logger.write_object(label)
+      logger.write_string(")")
+    }
+  }
+}
+
+///|
+pub impl Show for PemBlock with output(self, logger) {
+  logger.write_string("{label: ")
+  logger.write_object(self.label)
+  logger.write_string(", data: ")
+  logger.write_object(self.data)
+  logger.write_string(", headers: ")
+  logger.write_object(self.headers)
+  logger.write_string("}")
+}
 
 ///|
 /// Create a new PEM block
