@@ -76,7 +76,7 @@ pub impl Show for PemBlock with output(self, logger) {
 pub fn PemBlock::new(
   label~ : String,
   data~ : Bytes,
-  headers? : Map[String, String] = Map::new(),
+  headers? : Map[String, String] = Map([]),
 ) -> PemBlock {
   { label, data, headers }
 }
@@ -296,7 +296,7 @@ pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
   }
 
   // Parse headers and data
-  let headers : Map[String, String] = Map::new()
+  let headers : Map[String, String] = Map([])
   let mut data_start_idx = begin_line_idx + 1
 
   // Look for headers
