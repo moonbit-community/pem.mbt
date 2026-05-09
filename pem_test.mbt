@@ -57,9 +57,9 @@ test "encode_long_data_with_line_wrapping" {
   // Verify it contains line breaks and proper structure
   let lines = encoded.split("\n") |> Iter::to_array
   inspect(lines.length() > 3, content="true") // Should have multiple lines
-  inspect(lines[0].to_string(), content="-----BEGIN LONG DATA-----")
+  inspect(lines[0].to_owned(), content="-----BEGIN LONG DATA-----")
   inspect(
-    lines[lines.length() - 1].to_string(),
+    lines[lines.length() - 1].to_owned(),
     content="-----END LONG DATA-----",
   )
 }
