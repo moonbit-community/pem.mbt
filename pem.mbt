@@ -192,7 +192,7 @@ pub fn encode(block : PemBlock) -> String {
     } else {
       base64_data.length()
     }
-    result = result + base64_data[i:end].to_string() + "\n"
+    result = result + base64_data[i:end].to_owned() + "\n"
     i = i + 64
   }
   result = result + "-----END \{block.label}-----"
@@ -243,7 +243,7 @@ fn trim_string(s : String) -> String {
   if start >= end {
     ""
   } else {
-    s[start:end].to_string()
+    s[start:end].to_owned()
   }
 }
 
@@ -252,7 +252,7 @@ fn trim_string(s : String) -> String {
 pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
   let lines = pem_data.split("\n")
     |> Iter::to_array
-    |> Array::map(fn(view) { view.to_string() })
+    |> Array::map(fn(view) { view.to_owned() })
   if lines.length() < 2 {
     return Err(PemError::InvalidFormat("PEM data too short"))
   }
@@ -267,7 +267,7 @@ pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
       begin_line_idx = i
       let start_pos = 11 // length of "-----BEGIN "
       let end_pos = line.length() - 5 // remove "-----"
-      begin_label = line[start_pos:end_pos].to_string()
+      begin_label = line[start_pos:end_pos].to_owned()
       break
     }
   }
@@ -284,7 +284,7 @@ pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
       end_line_idx = i
       let start_pos = 9 // length of "-----END "
       let end_pos = line.length() - 5 // remove "-----"
-      end_label = line[start_pos:end_pos].to_string()
+      end_label = line[start_pos:end_pos].to_owned()
       break
     }
   }
@@ -309,7 +309,7 @@ pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
     if line.contains(":") {
       let parts = line.split(":")
         |> Iter::to_array
-        |> Array::map(fn(view) { view.to_string() })
+        |> Array::map(fn(view) { view.to_owned() })
       if parts.length() >= 2 {
         let key = trim_string(parts[0])
         let value = trim_string(parts[1])
@@ -350,7 +350,7 @@ pub fn decode(pem_data : String) -> Result[PemBlock, PemError] {
 pub fn decode_many(pem_data : String) -> Result[Array[PemBlock], PemError] {
   let lines = pem_data.split("\n")
     |> Iter::to_array
-    |> Array::map(fn(view) { view.to_string() })
+    |> Array::map(fn(view) { view.to_owned() })
   let blocks : Array[PemBlock] = []
   let mut current_block_lines : Array[String] = []
   let mut in_block = false
