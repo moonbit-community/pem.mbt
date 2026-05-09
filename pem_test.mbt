@@ -96,13 +96,13 @@ test "decode_pem_block_with_headers" {
       inspect(block.label, content="CERTIFICATE")
       inspect(block.data.to_string(), content="b\"Test data\"")
       inspect(block.headers.length(), content="2")
-      inspect(
+      debug_inspect(
         block.headers.get("Version"),
         content=(
           #|Some("1.0")
         ),
       )
-      inspect(
+      debug_inspect(
         block.headers.get("Algorithm"),
         content=(
           #|Some("RSA")
@@ -165,13 +165,13 @@ test "roundtrip_encoding_decoding" {
     Ok(decoded_block) => {
       inspect(decoded_block.label, content="TEST")
       inspect(decoded_block.data.to_string(), content=original_data.to_string())
-      inspect(
+      debug_inspect(
         decoded_block.headers.get("Test"),
         content=(
           #|Some("true")
         ),
       )
-      inspect(
+      debug_inspect(
         decoded_block.headers.get("Version"),
         content=(
           #|Some("2.0")
@@ -360,7 +360,7 @@ test "pem_block_constructor" {
   let block = @pem.PemBlock::new(label="TEST", data~, headers~)
   inspect(block.label, content="TEST")
   inspect(block.data.to_string(), content="b\"test data\"")
-  inspect(
+  debug_inspect(
     block.headers.get("key"),
     content=(
       #|Some("value")
@@ -523,13 +523,13 @@ test "documentation_private_key_with_encryption_headers" {
   // Verify roundtrip preserves headers
   match decode(encoded) {
     Ok(decoded) => {
-      inspect(
+      debug_inspect(
         decoded.headers.get("Proc-Type"),
         content=(
           #|Some("4,ENCRYPTED")
         ),
       )
-      inspect(
+      debug_inspect(
         decoded.headers.get("DEK-Info")
         |> Option::map(fn(s) { string_starts_with(s, "AES-256-CBC") }),
         content="Some(true)",
