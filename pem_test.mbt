@@ -1,5 +1,22 @@
 ///|
 /// Tests for PEM encoding and decoding functionality
+
+/// Helper function to check if string starts with prefix (for tests)
+fn string_starts_with(s : String, prefix : String) -> Bool {
+  match s.strip_prefix(prefix) {
+    Some(_) => true
+    None => false
+  }
+}
+
+/// Helper function to check if string ends with suffix (for tests)
+fn string_ends_with(s : String, suffix : String) -> Bool {
+  match s.strip_suffix(suffix) {
+    Some(_) => true
+    None => false
+  }
+}
+
 test "encode_simple_pem_block" {
   let data = b"Hello, World!"
   let block = @pem.PemBlock::new(label="MESSAGE", data~)
@@ -536,5 +553,69 @@ test "documentation_private_key_with_encryption_headers" {
       )
     }
     Err(error) => fail("Private key roundtrip failed: \{error}")
+  }
+}
+
+///|
+test "decode_error_invalid_label_with_newline" {
+  // Note: A newline in the label will cause the PEM format itself to be invalid,
+  // so this test verifies that invalid format is detected
+  let pem_data =
+    #|-----BEGIN TEST
+    #|LABEL-----
+    #|SGVsbG8=
+    #|-----END TEST
+    #|LABEL-----
+  let result = @pem.decode(pem_data)
+  match result {
+    Err(@pem.PemError::InvalidFormat(_)) =>
+      // Expected - format error is detected before label validation
+      ()
+    Ok(_) => fail("Expected error for label with newline")
+    Err(other) => fail("Unexpected error type: \{other}")
+  }
+}
+
+///|
+test "decode_error_invalid_label_with_colon" {
+  let pem_data =
+    #|-----BEGIN TEST:LABEL-----
+    #|SGVsbG8=
+    #|-----END TEST:LABEL-----
+  let result = @pem.decode(pem_data)
+  match result {
+    Err(@pem.PemError::InvalidLabel(_)) =>
+      // Expected
+      ()
+    Ok(_) => fail("Expected error for label with colon")
+    Err(other) => fail("Unexpected error type: \{other}")
+  }
+}
+
+///|
+test "decode_error_invalid_label_with_control_char" {
+  // Test with a label containing a control character (e.g., tab)
+  let pem_data = "-----BEGIN TEST\tLABEL-----\nSGVsbG8=\n-----END TEST\tLABEL-----"
+  let result = @pem.decode(pem_data)
+  match result {
+    Err(@pem.PemError::InvalidLabel(_)) =>
+      // Expected
+      ()
+    Ok(_) => fail("Expected error for label with control character")
+    Err(other) => fail("Unexpected error type: \{other}")
+  }
+}
+
+///|
+test "decode_valid_label_with_spaces" {
+  // Spaces are valid in labels (e.g., "RSA PRIVATE KEY")
+  let pem_data =
+    #|-----BEGIN RSA PRIVATE KEY-----
+    #|SGVsbG8=
+    #|-----END RSA PRIVATE KEY-----
+  let result = @pem.decode(pem_data)
+  match result {
+    Ok(block) => inspect(block.label, content="RSA PRIVATE KEY")
+    Err(error) => fail("Valid label with spaces should not fail: \{error}")
   }
 }
