@@ -67,7 +67,19 @@ pub impl Show for PemBlock with output(self, logger) {
   logger.write_string(", data: ")
   logger.write_object(self.data)
   logger.write_string(", headers: ")
-  logger.write_object(self.headers)
+  logger.write_string("{")
+  let mut first = true
+  for key, value in self.headers {
+    if first {
+      first = false
+    } else {
+      logger.write_string(", ")
+    }
+    logger.write_object(key)
+    logger.write_string(": ")
+    logger.write_object(value)
+  }
+  logger.write_string("}")
   logger.write_string("}")
 }
 
