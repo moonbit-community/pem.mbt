@@ -4,7 +4,7 @@ A MoonBit library for encoding and decoding PEM format data, commonly used for c
 
 ## Basic Encoding
 
-```moonbit nocheck
+```mbt check
 ///|
 test "basic_encoding_example" {
   let data = b"Hello, World!"
@@ -23,7 +23,7 @@ test "basic_encoding_example" {
 
 ## Encoding with Headers
 
-```moonbit nocheck
+```mbt check
 ///|
 test "encoding_with_headers_example" {
   let cert_data = b"Certificate data"
@@ -47,7 +47,7 @@ test "encoding_with_headers_example" {
 
 ## Basic Decoding
 
-```moonbit nocheck
+```mbt check
 ///|
 test "basic_decoding_example" {
   let pem_data =
@@ -58,7 +58,7 @@ test "basic_decoding_example" {
   match result {
     Ok(block) => {
       assert_eq(block.label, "MESSAGE")
-      assert_eq(block.data, "Hello, World!")
+      assert_eq(block.data, b"Hello, World!")
       assert_eq(block.headers.length(), 0)
     }
     Err(error) => fail("Unexpected error: \{error}")
@@ -68,7 +68,7 @@ test "basic_decoding_example" {
 
 ## Decoding with Headers
 
-```moonbit nocheck
+```mbt check
 ///|
 test "decoding_with_headers_example" {
   let pem_data =
@@ -82,9 +82,9 @@ test "decoding_with_headers_example" {
   match result {
     Ok(block) => {
       assert_eq(block.label, "CERTIFICATE")
-      assert_eq(block.data, "Certificate data")
-      assert_eq(block.headers.get("Version"), Some("1.0"))
-      assert_eq(block.headers.get("Algorithm"), Some("RSA"))
+      assert_eq(block.data, b"Certificate data")
+      assert_true(block.headers.get("Version") == Some("1.0"))
+      assert_true(block.headers.get("Algorithm") == Some("RSA"))
     }
     Err(error) => fail("Unexpected error: \{error}")
   }
@@ -93,7 +93,7 @@ test "decoding_with_headers_example" {
 
 ## Decoding Multiple Blocks
 
-```moonbit nocheck
+```mbt check
 ///|
 test "multiple_blocks_example" {
   let multi_pem =
@@ -108,9 +108,9 @@ test "multiple_blocks_example" {
     Ok(blocks) => {
       assert_eq(blocks.length(), 2)
       assert_eq(blocks[0].label, "FIRST")
-      assert_eq(blocks[0].data, "first")
+      assert_eq(blocks[0].data, b"first")
       assert_eq(blocks[1].label, "SECOND")
-      assert_eq(blocks[1].data, "second")
+      assert_eq(blocks[1].data, b"second")
     }
     Err(error) => fail("Unexpected error: \{error}")
   }
@@ -119,7 +119,7 @@ test "multiple_blocks_example" {
 
 ## Error Handling
 
-```moonbit nocheck
+```mbt check
 ///|
 test "error_handling_examples" {
   // Test invalid format
@@ -162,7 +162,7 @@ test "error_handling_examples" {
 
 ## Roundtrip Example
 
-```moonbit nocheck
+```mbt check
 ///|
 test "roundtrip_example" {
   let original_data = b"Any binary data can be encoded in PEM format"
@@ -178,8 +178,8 @@ test "roundtrip_example" {
     Ok(decoded) => {
       assert_eq(decoded.label, "DATA")
       assert_eq(decoded.data.to_string(), original_data.to_string())
-      assert_eq(decoded.headers.get("Type"), Some("Example"))
-      assert_eq(decoded.headers.get("Version"), Some("1.0"))
+      assert_true(decoded.headers.get("Type") == Some("Example"))
+      assert_true(decoded.headers.get("Version") == Some("1.0"))
     }
     Err(error) => fail("Roundtrip failed: \{error}")
   }
@@ -188,7 +188,7 @@ test "roundtrip_example" {
 
 ## Certificate Example
 
-```moonbit nocheck
+```mbt check
 ///|
 test "certificate_example" {
   let cert_data = b"Mock X.509 certificate data"
@@ -204,7 +204,7 @@ test "certificate_example" {
   match result {
     Ok(decoded) => {
       assert_eq(decoded.label, "CERTIFICATE")
-      assert_eq(decoded.data, "Mock X.509 certificate data")
+      assert_eq(decoded.data, b"Mock X.509 certificate data")
     }
     Err(error) => fail("Certificate roundtrip failed: \{error}")
   }
@@ -213,7 +213,7 @@ test "certificate_example" {
 
 ## Private Key Example
 
-```moonbit nocheck
+```mbt check
 ///|
 test "private_key_example" {
   let key_data = b"Mock RSA private key data"
@@ -240,12 +240,12 @@ test "private_key_example" {
   let result = decode(pem_string)
   match result {
     Ok(decoded) => {
-      assert_eq(decoded.headers.get("Proc-Type"), Some("4,ENCRYPTED"))
-      inspect(
-        decoded.headers.get("DEK-Info")
-        |> Option::map(fn(s) { string_starts_with(s, "AES-256-CBC") }),
-        content="Some(true)",
-      )
+      assert_true(decoded.headers.get("Proc-Type") == Some("4,ENCRYPTED"))
+      match decoded.headers.get("DEK-Info") {
+        Some(dek_info) =>
+          assert_true(string_starts_with(dek_info, "AES-256-CBC"))
+        None => fail("Missing DEK-Info header")
+      }
     }
     Err(error) => fail("Private key roundtrip failed: \{error}")
   }
@@ -254,7 +254,7 @@ test "private_key_example" {
 
 ## Certificate Chain Example
 
-```moonbit nocheck
+```mbt check
 ///|
 test "certificate_chain_example" {
   // Create a certificate chain
@@ -280,9 +280,9 @@ test "certificate_chain_example" {
   match result {
     Ok(certificates) => {
       assert_eq(certificates.length(), 3)
-      assert_eq(certificates[0].data, "Root CA certificate")
-      assert_eq(certificates[1].data, "Intermediate certificate")
-      assert_eq(certificates[2].data, "Leaf certificate")
+      assert_eq(certificates[0].data, b"Root CA certificate")
+      assert_eq(certificates[1].data, b"Intermediate certificate")
+      assert_eq(certificates[2].data, b"Leaf certificate")
 
       // All should be certificates
       for cert in certificates {
@@ -296,7 +296,7 @@ test "certificate_chain_example" {
 
 ## Long Data with Line Wrapping
 
-```moonbit nocheck
+```mbt check
 ///|
 test "long_data_line_wrapping_example" {
   // Create data that will require line wrapping (more than 64 base64 chars)
@@ -328,7 +328,7 @@ test "long_data_line_wrapping_example" {
 
 ## Mixed Block Types
 
-```moonbit nocheck
+```mbt check
 ///|
 test "mixed_block_types_example" {
   // Create different types of PEM blocks
@@ -347,11 +347,11 @@ test "mixed_block_types_example" {
 
       // Verify each block type
       assert_eq(blocks[0].label, "CERTIFICATE")
-      assert_eq(blocks[0].data, "Certificate data")
+      assert_eq(blocks[0].data, b"Certificate data")
       assert_eq(blocks[1].label, "PUBLIC KEY")
-      assert_eq(blocks[1].data, "Public key data")
+      assert_eq(blocks[1].data, b"Public key data")
       assert_eq(blocks[2].label, "PRIVATE KEY")
-      assert_eq(blocks[2].data, "Private key data")
+      assert_eq(blocks[2].data, b"Private key data")
     }
     Err(error) => fail("Mixed blocks parsing failed: \{error}")
   }
@@ -360,7 +360,7 @@ test "mixed_block_types_example" {
 
 ## Empty and Edge Cases
 
-```moonbit nocheck
+```mbt check
 ///|
 test "edge_cases_example" {
   // Test empty data
@@ -384,7 +384,7 @@ test "edge_cases_example" {
   match result {
     Ok(block) => {
       assert_eq(block.label, "TEST")
-      assert_eq(block.data, "A")
+      assert_eq(block.data, b"A")
     }
     Err(error) => fail("Minimal PEM failed: \{error}")
   }
