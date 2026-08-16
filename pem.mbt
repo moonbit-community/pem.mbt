@@ -32,7 +32,7 @@ pub(all) struct PemBlock {
 } derive(Eq)
 
 ///|
-pub impl Show for PemError with output(self, logger) {
+pub impl Show for PemError with fn output(self, logger) {
   match self {
     InvalidFormat(message) => {
       logger.write_string("InvalidFormat(")
@@ -61,7 +61,7 @@ pub impl Show for PemError with output(self, logger) {
 }
 
 ///|
-pub impl Show for PemBlock with output(self, logger) {
+pub impl Show for PemBlock with fn output(self, logger) {
   logger.write_string("{label: ")
   logger.write_object(self.label)
   logger.write_string(", data: ")
