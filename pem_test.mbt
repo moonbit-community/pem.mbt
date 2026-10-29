@@ -383,13 +383,16 @@ test "pem_block_constructor_default_headers" {
 test "documentation_basic_encoding" {
   // Basic encoding example
   let data = b"Hello, World!"
-  let block = PemBlock::new(label="MESSAGE", data~)
-  let encoded = encode(block)
+  let block = @pem.PemBlock::new(label="MESSAGE", data~)
+  let encoded = @pem.encode(block)
   inspect(
-    string_starts_with(encoded, "-----BEGIN MESSAGE-----"),
+    @pem.string_starts_with(encoded, "-----BEGIN MESSAGE-----"),
     content="true",
   )
-  inspect(string_ends_with(encoded, "-----END MESSAGE-----"), content="true")
+  inspect(
+    @pem.string_ends_with(encoded, "-----END MESSAGE-----"),
+    content="true",
+  )
 }
 
 ///|
@@ -397,8 +400,8 @@ test "documentation_encoding_with_headers" {
   // Encoding with headers example
   let data = b"Certificate data"
   let headers : Map[String, String] = { "Version": "1.0", "Algorithm": "RSA" }
-  let block = PemBlock::new(label="CERTIFICATE", data~, headers~)
-  let encoded = encode(block)
+  let block = @pem.PemBlock::new(label="CERTIFICATE", data~, headers~)
+  let encoded = @pem.encode(block)
   inspect(encoded.contains("Version: 1.0"), content="true")
   inspect(encoded.contains("Algorithm: RSA"), content="true")
 }
@@ -409,22 +412,22 @@ test "documentation_comprehensive_error_scenarios" {
 
   // 1. Missing BEGIN marker
   let no_begin = "SGVsbG8=\n-----END MESSAGE-----"
-  match decode(no_begin) {
-    Err(PemError::InvalidFormat(_)) => () // Expected
+  match @pem.decode(no_begin) {
+    Err(@pem.PemError::InvalidFormat(_)) => () // Expected
     _ => fail("Should detect missing BEGIN")
   }
 
   // 2. Missing END marker  
   let no_end = "-----BEGIN MESSAGE-----\nSGVsbG8="
-  match decode(no_end) {
-    Err(PemError::InvalidFormat(_)) => () // Expected
+  match @pem.decode(no_end) {
+    Err(@pem.PemError::InvalidFormat(_)) => () // Expected
     _ => fail("Should detect missing END")
   }
 
   // 3. Mismatched labels
   let mismatched = "-----BEGIN MESSAGE-----\nSGVsbG8=\n-----END CERTIFICATE-----"
-  match decode(mismatched) {
-    Err(PemError::MismatchedLabels(begin, end)) => {
+  match @pem.decode(mismatched) {
+    Err(@pem.PemError::MismatchedLabels(begin, end)) => {
       inspect(begin, content="MESSAGE")
       inspect(end, content="CERTIFICATE")
     }
@@ -433,15 +436,15 @@ test "documentation_comprehensive_error_scenarios" {
 
   // 4. Invalid base64
   let bad_base64 = "-----BEGIN MESSAGE-----\nInvalid@Base64!\n-----END MESSAGE-----"
-  match decode(bad_base64) {
-    Err(PemError::InvalidBase64(_)) => () // Expected
+  match @pem.decode(bad_base64) {
+    Err(@pem.PemError::InvalidBase64(_)) => () // Expected
     _ => fail("Should detect invalid base64")
   }
 
   // 5. Empty data
   let empty_data = "-----BEGIN MESSAGE-----\n-----END MESSAGE-----"
-  match decode(empty_data) {
-    Err(PemError::EmptyData) => () // Expected
+  match @pem.decode(empty_data) {
+    Err(@pem.PemError::EmptyData) => () // Expected
     _ => fail("Should detect empty data")
   }
 }
@@ -450,15 +453,15 @@ test "documentation_comprehensive_error_scenarios" {
 test "documentation_long_data_with_line_wrapping" {
   // Test line wrapping with long data
   let long_data = Bytes::from_array(Array::make(200, 65)) // 200 'A' bytes
-  let block = PemBlock::new(label="LONG DATA", data=long_data)
-  let encoded = encode(block)
+  let block = @pem.PemBlock::new(label="LONG DATA", data=long_data)
+  let encoded = @pem.encode(block)
 
   // Should have multiple lines due to 64-character wrapping
   let lines = encoded.split("\n") |> Iter::to_array
   inspect(lines.length() > 5, content="true")
 
   // Verify roundtrip
-  match decode(encoded) {
+  match @pem.decode(encoded) {
     Ok(decoded) => {
       inspect(decoded.data.length(), content="200")
       inspect(decoded.label, content="LONG DATA")
@@ -473,11 +476,15 @@ test "documentation_certificate_chain_example" {
   let cert1_data = b"First certificate data"
   let cert2_data = b"Second certificate data"
   let cert3_data = b"Third certificate data"
-  let cert1 = PemBlock::new(label="CERTIFICATE", data=cert1_data)
-  let cert2 = PemBlock::new(label="CERTIFICATE", data=cert2_data)
-  let cert3 = PemBlock::new(label="CERTIFICATE", data=cert3_data)
-  let chain = encode(cert1) + "\n" + encode(cert2) + "\n" + encode(cert3)
-  match decode_many(chain) {
+  let cert1 = @pem.PemBlock::new(label="CERTIFICATE", data=cert1_data)
+  let cert2 = @pem.PemBlock::new(label="CERTIFICATE", data=cert2_data)
+  let cert3 = @pem.PemBlock::new(label="CERTIFICATE", data=cert3_data)
+  let chain = @pem.encode(cert1) +
+    "\n" +
+    @pem.encode(cert2) +
+    "\n" +
+    @pem.encode(cert3)
+  match @pem.decode_many(chain) {
     Ok(certificates) => {
       inspect(certificates.length(), content="3")
       inspect(
@@ -505,23 +512,23 @@ test "documentation_private_key_with_encryption_headers" {
     "Proc-Type": "4,ENCRYPTED",
     "DEK-Info": "AES-256-CBC,1234567890ABCDEF1234567890ABCDEF",
   }
-  let key_block = PemBlock::new(
+  let key_block = @pem.PemBlock::new(
     label="RSA PRIVATE KEY",
     data=key_data,
     headers~,
   )
-  let encoded = encode(key_block)
+  let encoded = @pem.encode(key_block)
 
   // Verify structure
   inspect(
-    string_starts_with(encoded, "-----BEGIN RSA PRIVATE KEY-----"),
+    @pem.string_starts_with(encoded, "-----BEGIN RSA PRIVATE KEY-----"),
     content="true",
   )
   inspect(encoded.contains("Proc-Type: 4,ENCRYPTED"), content="true")
   inspect(encoded.contains("DEK-Info: AES-256-CBC"), content="true")
 
   // Verify roundtrip preserves headers
-  match decode(encoded) {
+  match @pem.decode(encoded) {
     Ok(decoded) => {
       debug_inspect(
         decoded.headers.get("Proc-Type"),
@@ -531,7 +538,7 @@ test "documentation_private_key_with_encryption_headers" {
       )
       debug_inspect(
         decoded.headers.get("DEK-Info")
-        |> Option::map(fn(s) { string_starts_with(s, "AES-256-CBC") }),
+        |> Option::map(fn(s) { @pem.string_starts_with(s, "AES-256-CBC") }),
         content="Some(true)",
       )
     }

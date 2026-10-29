@@ -32,7 +32,7 @@ pub(all) struct PemBlock {
 } derive(Eq)
 
 ///|
-pub impl Show for PemError with output(self, logger) {
+pub impl Show for PemError with fn output(self, logger) {
   match self {
     InvalidFormat(message) => {
       logger.write_string("InvalidFormat(")
@@ -61,7 +61,7 @@ pub impl Show for PemError with output(self, logger) {
 }
 
 ///|
-pub impl Show for PemBlock with output(self, logger) {
+pub impl Show for PemBlock with fn output(self, logger) {
   logger.write_string("{label: ")
   logger.write_object(self.label)
   logger.write_string(", data: ")
@@ -88,9 +88,9 @@ pub impl Show for PemBlock with output(self, logger) {
 pub fn PemBlock::new(
   label~ : String,
   data~ : Bytes,
-  headers? : Map[String, String] = Map([]),
+  headers~ : Map[String, String] = Map([]),
 ) -> PemBlock {
-  { label, data, headers }
+  { label, data, headers, }
 }
 
 ///|
@@ -99,10 +99,10 @@ let base64_chars : String = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxy
 
 ///|
 /// Base64 decoding table  
-let base64_decode_table : FixedArray[Int] = {
-  let table : FixedArray[Int] = FixedArray::make(256, -1)
+let base64_decode_table : FixedArray[Int32] = {
+  let table : FixedArray[Int32] = FixedArray::make(256, -1)
   for i = 0; i < base64_chars.length(); i = i + 1 {
-    let char_code : Int = base64_chars.code_unit_at(i).to_int()
+    let char_code : Int32 = base64_chars.code_unit_at(i).to_int()
     table[char_code] = i
   }
   table[61] = 0 // '=' padding character
@@ -124,17 +124,17 @@ fn encode_base64(data : Bytes) -> String {
     let b3 = if i + 2 < len { data[i + 2].to_int() } else { 0 }
     let combined = (b1 << 16) | (b2 << 8) | b3
     let c1 = base64_chars.code_unit_at((combined >> 18) & 63).to_int()
-      |> Int::unsafe_to_char
+      |> Int32::unsafe_to_char
     let c2 = base64_chars.code_unit_at((combined >> 12) & 63).to_int()
-      |> Int::unsafe_to_char
+      |> Int32::unsafe_to_char
     let c3 = if i + 1 < len {
       base64_chars.code_unit_at((combined >> 6) & 63).to_int()
-      |> Int::unsafe_to_char
+      |> Int32::unsafe_to_char
     } else {
       '='
     }
     let c4 = if i + 2 < len {
-      base64_chars.code_unit_at(combined & 63).to_int() |> Int::unsafe_to_char
+      base64_chars.code_unit_at(combined & 63).to_int() |> Int32::unsafe_to_char
     } else {
       '='
     }
@@ -158,10 +158,10 @@ fn decode_base64(input : String) -> Result[Bytes, PemError] {
   let result : Array[Byte] = []
   let mut i = 0
   while i < cleaned.length() {
-    let c1 : Int = cleaned.code_unit_at(i).to_int()
-    let c2 : Int = cleaned.code_unit_at(i + 1).to_int()
-    let c3 : Int = cleaned.code_unit_at(i + 2).to_int()
-    let c4 : Int = cleaned.code_unit_at(i + 3).to_int()
+    let c1 : Int32 = cleaned.code_unit_at(i).to_int()
+    let c2 : Int32 = cleaned.code_unit_at(i + 1).to_int()
+    let c3 : Int32 = cleaned.code_unit_at(i + 2).to_int()
+    let c4 : Int32 = cleaned.code_unit_at(i + 3).to_int()
     let v1 = base64_decode_table[c1]
     let v2 = base64_decode_table[c2]
     let v3 = base64_decode_table[c3]
@@ -170,12 +170,12 @@ fn decode_base64(input : String) -> Result[Bytes, PemError] {
       return Err(PemError::InvalidBase64("Invalid base64 character"))
     }
     let combined = (v1 << 18) | (v2 << 12) | (v3 << 6) | v4
-    result.push(((combined >> 16) & 255) |> Int::to_byte)
+    result.push(((combined >> 16) & 255) |> Int32::to_byte)
     if c3 != 61 {
-      result.push(((combined >> 8) & 255) |> Int::to_byte)
+      result.push(((combined >> 8) & 255) |> Int32::to_byte)
     }
     if c4 != 61 {
-      result.push((combined & 255) |> Int::to_byte)
+      result.push((combined & 255) |> Int32::to_byte)
     }
     i = i + 4
   }
