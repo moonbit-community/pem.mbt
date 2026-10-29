@@ -20,7 +20,11 @@ pub(all) struct PemBlock {
   data : Bytes
   headers : Map[String, String]
 } derive(Eq)
+pub fn PemBlock::equal(Self, Self) -> Bool
 pub fn PemBlock::new(label~ : String, data~ : Bytes, headers? : Map[String, String]) -> Self
+pub fn PemBlock::not_equal(Self, Self) -> Bool
+pub fn PemBlock::output(Self, &Logger) -> Unit
+pub fn PemBlock::to_string(Self) -> String
 pub impl Show for PemBlock
 
 pub(all) enum PemError {
@@ -30,9 +34,13 @@ pub(all) enum PemError {
   EmptyData
   InvalidLabel(String)
 } derive(Eq, ToJson)
+pub fn PemError::equal(Self, Self) -> Bool
+pub fn PemError::not_equal(Self, Self) -> Bool
+pub fn PemError::output(Self, &Logger) -> Unit
+pub fn PemError::to_json(Self) -> Json
+pub fn PemError::to_string(Self) -> String
 pub impl Show for PemError
 
 // Type aliases
 
 // Traits
-
